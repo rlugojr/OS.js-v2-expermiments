@@ -1,0 +1,14 @@
+{
+  "className":  "ApplicationTetris",
+  "name":       "Tetris",
+  "mime":       null,
+  "icon":       "./icon.png",
+  "category":   "games",
+  "preload":    [
+    {"src": "main.js", "type": "javascript"},
+    {"src": "main.css", "type": "stylesheet"}
+  ]
+}
+
+
+
