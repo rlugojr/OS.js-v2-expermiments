@@ -89,7 +89,7 @@
         onInited: function(el) {
           if ( el.firstChild ) {
             var img = document.createElement('img');
-            img.src = API.getThemeResource('status/network-transmit-receive.png', 'icon', '16x16');
+            img.src = API.getIcon('status/network-transmit-receive.png');
             el.firstChild.appendChild(img);
           }
         }
