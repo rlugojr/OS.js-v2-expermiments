@@ -219,11 +219,11 @@
       self.createMessageWindow('read', item);
     };
     this.mailboxView.setColumns([
-      {'visible': false, 'key': 'Id', 'title': 'Id', domProperties: {width: 100}},
-      {'visible': false, 'key': 'Thread', 'title': 'Thread', domProperties: {width: 100}},
+      {'visible': false, 'key': 'Id', 'title': 'Id', width: 100},
+      {'visible': false, 'key': 'Thread', 'title': 'Thread', width: 100},
       {'key': 'Subject', 'title': 'Subject'},
-      {'key': 'From', 'title': 'From', domProperties: {width: 100}},
-      {'key': 'Date', 'title': 'Date', domProperties: {width: 100}}
+      {'key': 'From', 'title': 'From', width: 100},
+      {'key': 'Date', 'title': 'Date', width: 100}
     ]);
     this.mailboxView.render();
 
