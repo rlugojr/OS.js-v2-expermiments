@@ -1,0 +1,15 @@
+{
+  "className":  "ApplicationWolfenstein",
+  "name":       "Wolfenstein 3D",
+  "category":   "games",
+  "mime":       null,
+  "icon":       "./data/favicon.png",
+  "singular":   true,
+  "preload":    [
+    {"src": "main.js", "type": "javascript"},
+    {"src": "main.css", "type": "stylesheet"}
+  ]
+}
+
+
+
