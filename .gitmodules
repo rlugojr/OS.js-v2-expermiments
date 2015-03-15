@@ -3,4 +3,4 @@
 	url = https://github.com/mrdoob/three.js.git
 [submodule "Wolfenstein3D/data"]
 	path = Wolfenstein3D/data
-	url = https://github.com/loadx/html5-wolfenstein3D.git
+	url = https://github.com/andersevenrud/html5-wolfenstein3D.git
