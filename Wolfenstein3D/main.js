@@ -1,33 +1,5 @@
 (function(Application, Window, GUI, Dialogs, Utils, API, VFS) {
 
-  var GUIElement = OSjs.Core.GUIElement;
-
-  function IframeElement(name, src, cb) {
-    this.frameSource = src;
-    this.frameCallback = cb || function() {};
-    this.frameWindow = null;
-    this.frame = null;
-
-    GUIElement.apply(this, [name, {
-      isIframe: true
-    }]);
-  }
-
-  IframeElement.prototype = Object.create(GUIElement.prototype);
-
-  IframeElement.prototype.init = function() {
-    var self = this;
-    var el = GUIElement.prototype.init.apply(this, ['GUIWolfenstenIframe']);
-    this.frame = document.createElement('iframe');
-    this.frame.onload = function() {
-      self.frameWindow = self.frame.contentWindow;
-      self.frameCallback(self.frameWindow);
-    };
-    this.frame.src = this.frameSource;
-    this.frame.frameborder = '0';
-    el.appendChild(this.frame);
-    return el;
-  };
 
   /////////////////////////////////////////////////////////////////////////////
   // WINDOWS
@@ -37,7 +9,7 @@
    * Main Window Constructor
    */
   var ApplicationWolfensteinWindow = function(app, metadata) {
-    Window.apply(this, ['Wolfenstein3D', {
+    Window.apply(this, ['ApplicationWolfensteinWindow', {
       icon: metadata.icon,
       title: metadata.name,
       width: 640,
