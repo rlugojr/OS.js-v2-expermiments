@@ -1,34 +1,5 @@
 (function(Application, Window, GUI, Dialogs, Utils, API, VFS) {
 
-  var GUIElement = OSjs.Core.GUIElement;
-
-  function IframeElement(name, src, cb) {
-    this.frameSource = src;
-    this.frameCallback = cb || function() {};
-    this.frameWindow = null;
-    this.frame = null;
-
-    GUIElement.apply(this, [name, {
-      isIframe: true
-    }]);
-  }
-
-  IframeElement.prototype = Object.create(GUIElement.prototype);
-
-  IframeElement.prototype.init = function() {
-    var self = this;
-    var el = GUIElement.prototype.init.apply(this, ['GUIWolfenstenIframe']);
-    this.frame = document.createElement('iframe');
-    this.frame.onload = function() {
-      self.frameWindow = self.frame.contentWindow;
-      self.frameCallback(self.frameWindow);
-    };
-    this.frame.src = this.frameSource;
-    this.frame.frameborder = '0';
-    el.appendChild(this.frame);
-    return el;
-  };
-
   /////////////////////////////////////////////////////////////////////////////
   // WINDOWS
   /////////////////////////////////////////////////////////////////////////////
@@ -57,21 +28,7 @@
     var root = Window.prototype.init.apply(this, arguments);
     var src = API.getApplicationResource(app, 'data/index.html');
 
-    var w = this._addGUIElement(new IframeElement('MapIframe', src, function(contentWindow) {
-      self._addHook('focus', function() {
-        if ( contentWindow ) {
-          contentWindow.focus();
-          w.frame.focus();
-        }
-      });
-      self._addHook('blur', function() {
-        if ( contentWindow ) {
-          contentWindow.blur();
-          w.frame.blur();
-        }
-      });
-    }), root);
-
+    this._addGUIElement(new GUI.IFrame('MapIframe', {src: src}), root);
     return root;
   };
 

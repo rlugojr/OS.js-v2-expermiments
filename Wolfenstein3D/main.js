@@ -57,25 +57,14 @@
     var root = Window.prototype.init.apply(this, arguments);
     var src = API.getApplicationResource(app, 'data/index.html');
 
-    var w = this._addGUIElement(new IframeElement('WolfensteinIframe', src, function(contentWindow) {
-      self._addHook('focus', function() {
-        if ( contentWindow ) {
-          contentWindow.postMessage('resume', window.location.href);
-
-          // This also happens within 'onmessage' in iframe
-          contentWindow.focus();
-          w.frame.focus();
-        }
-      });
-      self._addHook('blur', function() {
-        if ( contentWindow ) {
-          contentWindow.postMessage('pause', window.location.href);
-
-          // This also happens within 'onmessage' in iframe
-          contentWindow.blur();
-          w.frame.blur();
-        }
-      });
+    this._addGUIElement(new GUI.IFrame('WolfensteinIframe', {
+      src: src,
+      onFocus: function(win, frame) {
+        win.postMessage('resume', window.location.href);
+      },
+      onBlur: function(win, frame) {
+        win.postMessage('pause', window.location.href);
+      }
     }), root);
 
     return root;
