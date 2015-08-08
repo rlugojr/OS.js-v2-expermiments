@@ -525,20 +525,9 @@
 
   ApplicationTetris.prototype = Object.create(Application.prototype);
 
-  ApplicationTetris.prototype.destroy = function() {
-    return Application.prototype.destroy.apply(this, arguments);
-  };
-
   ApplicationTetris.prototype.init = function(settings, metadata) {
     Application.prototype.init.apply(this, arguments);
     this._addWindow(new ApplicationTetrisWindow(this, metadata));
-  };
-
-  ApplicationTetris.prototype._onMessage = function(obj, msg, args) {
-    Application.prototype._onMessage.apply(this, arguments);
-    if ( msg == 'destroyWindow' && obj._name === 'ApplicationTetrisWindow' ) {
-      this.destroy();
-    }
   };
 
   //

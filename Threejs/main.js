@@ -297,36 +297,13 @@
    */
   var ApplicationThreejs = function(args, metadata) {
     Application.apply(this, ['ApplicationThreejs', args, metadata]);
-
-    // You can set application variables here
   };
 
   ApplicationThreejs.prototype = Object.create(Application.prototype);
 
-  ApplicationThreejs.prototype.destroy = function() {
-    // Destroy communication, timers, objects etc. here
-
-    return Application.prototype.destroy.apply(this, arguments);
-  };
-
   ApplicationThreejs.prototype.init = function(settings, metadata) {
-    var self = this;
-
     Application.prototype.init.apply(this, arguments);
-
-    // Create your main window
-    var mainWindow = this._addWindow(new ApplicationThreejsWindow(this, metadata));
-
-    // Do other stuff here
-  };
-
-  ApplicationThreejs.prototype._onMessage = function(obj, msg, args) {
-    Application.prototype._onMessage.apply(this, arguments);
-
-    // Make sure we kill our application if main window was closed
-    if ( msg == 'destroyWindow' && obj._name === 'ApplicationThreejsWindow' ) {
-      this.destroy();
-    }
+    this._addWindow(new ApplicationThreejsWindow(this, metadata));
   };
 
   //

@@ -1,6 +1,7 @@
 {
   "className":  "ApplicationDrumSampler",
-  "name":       "Drum Sampler",
+  "enabled":    false,
+  "name":       "Drum Sampler UNCOMPATIBLE AT THE MOMENT",
   "mime":       ["osjs\\/dbeat"],
   "icon":       "devices/speaker.png",
   "category":   "multimedia",
