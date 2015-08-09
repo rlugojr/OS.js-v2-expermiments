@@ -525,9 +525,10 @@
 
   ApplicationTetris.prototype = Object.create(Application.prototype);
 
-  ApplicationTetris.prototype.init = function(settings, metadata) {
+  ApplicationTetris.prototype.init = function(settings, metadata, onInited) {
     Application.prototype.init.apply(this, arguments);
     this._addWindow(new ApplicationTetrisWindow(this, metadata));
+    onInited();
   };
 
   //

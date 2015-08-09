@@ -44,9 +44,10 @@
 
   ApplicationWolfenstein.prototype = Object.create(Application.prototype);
 
-  ApplicationWolfenstein.prototype.init = function(settings, metadata) {
+  ApplicationWolfenstein.prototype.init = function(settings, metadata, onInited) {
     Application.prototype.init.apply(this, arguments);
     this._addWindow(new ApplicationWolfensteinWindow(this, metadata));
+    onInited();
   };
 
   //

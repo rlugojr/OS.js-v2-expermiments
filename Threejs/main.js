@@ -301,9 +301,10 @@
 
   ApplicationThreejs.prototype = Object.create(Application.prototype);
 
-  ApplicationThreejs.prototype.init = function(settings, metadata) {
+  ApplicationThreejs.prototype.init = function(settings, metadata, onInited) {
     Application.prototype.init.apply(this, arguments);
     this._addWindow(new ApplicationThreejsWindow(this, metadata));
+    onInited();
   };
 
   //
