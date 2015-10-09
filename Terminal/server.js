@@ -4,16 +4,11 @@
   var app = require('http').createServer(handler)
   var io = require('socket.io')(app);
   var fs = require('fs');
-  var term;
-
-  app.listen(8080);
+  var sessions = {};
 
   function createSession() {
-    if ( term ) {
-      term.destroy();
-    }
 
-    term = pty.spawn('bash', [], {
+    var term = pty.spawn('bash', [], {
       name: 'xterm-color',
       cols: 80,
       rows: 30,
@@ -29,6 +24,9 @@
       io.emit('title', title);
     });
 
+    last = term;
+
+    return term;
   }
 
   function handler(req, res) {
@@ -44,30 +42,82 @@
     });
   }
 
+  function destroySession(id) {
+    if ( sessions[id] ) {
+      sessions[id].term.destroy();
+      delete sessions[id];
+    }
+  };
+
+  setInterval(function() {
+    var now = new Date();
+    Object.keys(sessions).forEach(function(key) {
+      var term = sessions[key];
+      if ( term.ping ) {
+        var sec = now - term.ping;
+        if ( sec >= 60 ) {
+          console.log('Session', key, 'timed out');
+          destroySession(key);
+        }
+      }
+    });
+  }, 5000);
+
   io.on('connection', function (socket) {
     console.log('Incoming connection');
 
     //io.emit('data', '...creating shell...');
 
-    socket.on('resize', function(x, y) {
-      console.log('resize', x, y);
+    socket.on('resize', function(id, x, y) {
+      if ( arguments.length === 2 ) return;
+      console.log('<<<', 'resize', id, x, y);
+
+      var term = sessions[id];
       if ( term ) {
-        term.resize(x, y);
+        term.term.resize(x, y);
       }
     });
 
     socket.on('process', function(id, cb) {
-      cb(false, 'null');
-    });
+      //console.log('<<<', 'process', id);
 
-    socket.on('data', function (data) {
-      console.log('data', data);
+      var term = sessions[id];
       if ( term ) {
-        term.write(data);
+        cb(false, term.term.process);
+      } else {
+        cb(false, 'null');
       }
     });
 
-    createSession();
+    socket.on('data', function (id, data) {
+      var term = sessions[id];
+      if ( term ) {
+        term.term.write(data);
+      }
+    });
+
+    socket.on('ping', function (id) {
+      //console.log('<<<', 'ping', id);
+      var term = sessions[id];
+      if ( term ) {
+        term.ping = new Date();
+      }
+    });
+
+    socket.on('destroy', function(id) {
+      console.log('<<<', 'destroy', id);
+      destroySession(id);
+    });
+
+    var term = createSession();
+    var id = term.pty;
+    socket.emit('id', id);
+    sessions[id] = {
+      ping: new Date(),
+      term: term
+    }
   });
+
+  app.listen(8080);
 
 })();

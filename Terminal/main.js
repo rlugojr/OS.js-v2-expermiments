@@ -30,8 +30,12 @@
 (function(Application, Window, Utils, API, VFS, GUI) {
   'use strict';
 
+  window._foo = 1;
+
   function createInstance(win, root, options) {
     options = options || {};
+
+    console.warn('ApplicationTerminal createInstance()', options);
 
     function getSize() {
       if ( win ) {
@@ -46,9 +50,16 @@
     var id;
     var term;
     var size = getSize();
-    var socket = io.connect(win.host, {});
+    var socket = io.connect(win.host);
+
+    socket.on('disconnect', function() {
+      console.warn('<<<', 'disconnect');
+      socket = null;
+    });
 
     socket.on('connect', function() {
+      console.warn('<<<', 'connect');
+      if ( !socket ) return;
 
       term = new Terminal({
         cols: size.cols,
@@ -59,19 +70,21 @@
 
       term.startBlink();
 
-      socket.emit('resize', size.cols, size.rows);
-
       win._addHook('resized', function() {
         if ( term ) {
           size = getSize();
           console.warn("window resized", size);
-          socket.emit('resize', size.cols, size.rows);
+          if ( socket && id ) {
+            socket.emit('resize', id, size.cols, size.rows);
+          }
           term.resize(size.cols, size.rows);
         }
       });
 
       term.on('data', function(data) {
-        socket.emit('data', data);
+        if ( id ) {
+          socket.emit('data', id, data);
+        }
       });
 
       term.open(root);
@@ -79,17 +92,34 @@
       term.write('\x1b[31mWelcome to term.js!\x1b[m\r\n');
 
       win.titleInterval = setInterval(function() {
-        socket.emit('process', id, function(err, name) {
-          if ( name ) {
-            win.setTitle(name);
-          }
-        });
+        if ( socket && id ) {
+          socket.emit('process', id, function(err, name) {
+            if ( name ) {
+              win.setTitle(name);
+            }
+          });
+        }
+      }, 1000);
+
+      win.pingInterval = setInterval(function() {
+        if ( socket && id ) {
+          socket.emit('ping', id);
+        }
       }, 1000);
 
       // Socket
       socket.on('resize', function(x, y) {
+        console.warn('<<<', 'resize', x, y);
         if ( term ) {
           term.resize(x, y);
+        }
+      });
+
+      socket.on('id', function(data) {
+        console.warn('<<<', 'id', data);
+        id = data || null;
+        if ( socket ) {
+          socket.emit('resize', id, size.cols, size.rows);
         }
       });
 
@@ -100,6 +130,7 @@
       });
 
       socket.on('disconnect', function() {
+        console.warn('<<<', 'disconnect');
         if ( term ) {
           term.destroy();
         }
@@ -113,8 +144,12 @@
         return size;
       },
 
+      getId: function() {
+        return id;
+      },
+
       input: function(type, ev) {
-        if ( term ) {
+        if ( term && id ) {
 
           if ( type === 'keydown' ) {
             term.keyDown(ev);
@@ -143,6 +178,9 @@
         if ( term ) {
           term.destroy();
         }
+        if ( socket && id ) {
+          socket.emit('destroy', id);
+        }
         term = null;
       }
     };
@@ -168,6 +206,7 @@
 
     this.terminal = null;
     this.titleInterval = null;
+    this.pingInterval = null;
   }
 
   ApplicationTerminalWindow.prototype = Object.create(Window.prototype);
@@ -196,9 +235,14 @@
     if ( this.titleInterval ) {
       this.titleInterval = clearInterval(this.titleInterval);
     }
+    if ( this.pingInterval ) {
+      this.pingInterval = clearInterval(this.pingInterval);
+    }
     if ( this.terminal ) {
       this.terminal.destroy();
     }
+
+    this.terminal = null;
 
     Window.prototype.destroy.apply(this, arguments);
   };
