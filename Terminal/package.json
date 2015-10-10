@@ -1,14 +1,14 @@
 {
   "className":  "ApplicationTerminal",
-  "name":       "Terminal (EARLY ALPHA)",
+  "name":       "Terminal",
   "mime":       null,
   "icon":       "apps/gnome-terminal.png",
   "category":   "system",
-  "singular":   true,
+  "singular":   false,
   "dependencies": {
     "socket.io-client": "latest",
-    "term.js": "latest",
-    "pty.js": "latest"
+    "term.js":          "latest",
+    "pty.js":           "latest"
   },
   "config": {
     "host": "10.0.0.50:8080"

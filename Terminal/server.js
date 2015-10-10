@@ -16,12 +16,22 @@
       env: process.env
     });
 
+
     term.on('data', function(data) {
-      io.emit('data', data);
+      var id = term.pty;
+      io.emit('data', id, data);
     });
 
     term.on('title', function(title) {
-      io.emit('title', title);
+      var id = term.pty;
+      io.emit('title', id, title);
+    });
+
+    term.on('close', function() {
+      var id = term.pty;
+      io.emit('kill', id);
+
+      destroySession(id);
     });
 
     last = term;
@@ -44,24 +54,27 @@
 
   function destroySession(id) {
     if ( sessions[id] ) {
-      sessions[id].term.destroy();
+      console.log('!!! destroying session', id);
+      if ( sessions[id].term ) {
+        sessions[id].term.destroy();
+      }
       delete sessions[id];
     }
   };
 
   setInterval(function() {
-    var now = new Date();
     Object.keys(sessions).forEach(function(key) {
       var term = sessions[key];
       if ( term.ping ) {
-        var sec = now - term.ping;
+        var now = Date.now();
+        var sec = (now - term.ping) / 1000;
         if ( sec >= 60 ) {
           console.log('Session', key, 'timed out');
           destroySession(key);
         }
       }
     });
-  }, 5000);
+  }, 1000);
 
   io.on('connection', function (socket) {
     console.log('Incoming connection');
@@ -97,10 +110,11 @@
     });
 
     socket.on('ping', function (id) {
-      //console.log('<<<', 'ping', id);
+      var now = Date.now();
       var term = sessions[id];
       if ( term ) {
-        term.ping = new Date();
+        console.log('<<<', 'ping', id, now, '<-', term.ping);
+        term.ping = now;
       }
     });
 
@@ -109,13 +123,20 @@
       destroySession(id);
     });
 
-    var term = createSession();
-    var id = term.pty;
-    socket.emit('id', id);
-    sessions[id] = {
-      ping: new Date(),
-      term: term
-    }
+    socket.on('spawn', function(cb) {
+      var term = createSession();
+      var id = term.pty;
+
+      console.log('>>>', 'spawn', id);
+
+      sessions[id] = {
+        ping: Date.now(),
+        term: term
+      };
+
+      cb(id);
+    });
+
   });
 
   app.listen(8080);
