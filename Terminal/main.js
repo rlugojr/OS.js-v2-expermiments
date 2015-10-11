@@ -45,7 +45,6 @@
   }
 
   function createSession(host, win) {
-    console.error(1);
     createConnection(host, function() {
       socket.emit('spawn', function(id) {
         console.warn('SPAWNED TERMINAL ON SERVER WITH', id);
@@ -69,11 +68,11 @@
     }
 
     socket = io.connect(host, {
+      'max reconnection attempts': 10,
       'force new connection': true
     });
 
     socket.on('disconnect', function() {
-      console.warn('<<<', 'disconnect');
       destroySessions();
       socket = null;
     });
@@ -82,7 +81,6 @@
 
       /*
       socket.on('resize', function(x, y) {
-        console.warn('<<<', 'resize', x, y);
         if ( term ) {
           term.resize(x, y);
         }
@@ -124,6 +122,8 @@
     this.terminal = null;
     this.titleInterval = null;
     this.pingInterval = null;
+    this.previousTitle = null;
+    this.hostname = metadata.config.host;
   }
 
   ApplicationTerminalWindow.prototype = Object.create(Window.prototype);
@@ -183,11 +183,13 @@
     }, 30000);
 
     term.open(this._$root);
-    term.write('\x1b[31mConnecting...\x1b[m\r\n');
+    //term.write('\x1b[31mWelcome to the OS.js Terminal. Type \'ssh\' to open a connection to the server...\x1b[m\r\n');
 
     term.on('data', function(data) {
       if ( socket && self.id ) {
         socket.emit('data', self.id, data);
+      } else {
+        emulateLocal(data);
       }
     });
 
@@ -203,6 +205,9 @@
       this.terminal.startBlink();
       this.terminal.focus();
     }
+
+    this.putTerminalData('... connecting to ' + this.hostname + '\r\n');
+    createSession(this.hostname, this);
   };
 
   ApplicationTerminalWindow.prototype.destroy = function() {
@@ -269,7 +274,11 @@
       title += Utils.format(' [{0}x{1}]', s.cols, s.rows);
     }
 
-    this._setTitle(title, true);
+    if ( title !== this.previousTitle ) {
+      this._setTitle(title, true);
+    }
+
+    this.previousTitle = title;
   };
 
   ApplicationTerminalWindow.prototype.putTerminalData = function(d) {
@@ -321,10 +330,15 @@
     scheme.load(function(error, result) {
       var win = self._addWindow(new ApplicationTerminalWindow(self, metadata, scheme));
 
-      createSession(metadata.config.host, win);
+      /*
+      self._call('spawn', null, function(err, result) {
+        //console.error("DXX", err, result);
+      });
+      */
 
       onInited();
     });
+
 
     this._setScheme(scheme);
   };

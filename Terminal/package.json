@@ -1,6 +1,6 @@
 {
   "className":  "ApplicationTerminal",
-  "name":       "Terminal",
+  "name":       "SSH Terminal",
   "mime":       null,
   "icon":       "apps/gnome-terminal.png",
   "category":   "system",
